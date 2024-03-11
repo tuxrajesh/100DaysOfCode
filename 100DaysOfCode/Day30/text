@@ -1,0 +1,75 @@
+from tkinter import *
+from tkinter import messagebox
+from random import choice, randint, shuffle
+import json
+
+FILENAME = "entries.json"
+
+# --- PASSWORD GENERATION FUNCTION ---
+def generate_password(length=12, min_letters=2, min_symbols=2, min_numbers=2):
+    """
+    Generates a random password with specified length and minimum counts
+    for each character type.
+    """
+    characters = []
+    letters = ['a', 'b', 'c', 'd', ..., 'Z']
+    numbers = ['0', '1', '2', ..., '9']
+    symbols = ['!', '#', '$', '%', '&', '(', ')', '*', '+']
+
+    # Ensure minimum counts are met
+    characters.extend(choice(letters) for _ in range(max(min_letters, length // 3)))
+    characters.extend(choice(symbols) for _ in range(max(min_symbols, length // 4)))
+    characters.extend(choice(numbers) for _ in range(max(min_numbers, length // 5)))
+
+    # Fill remaining characters randomly
+    characters.extend(choice(string.printable) for _ in range(length - len(characters)))
+
+    # Shuffle and return password
+    shuffle(characters)
+    return "".join(characters)
+
+# --- DATA VALIDATION FUNCTION ---
+def validate_data(website, email, password):
+    """
+    Checks if all fields are filled and password is of reasonable length.
+    """
+    if not website or not password:
+        messagebox.showerror(title="Error", message="Please fill all entries.")
+        return False
+    if len(password) < 8:
+        messagebox.showerror(title="Error", message="Password must be at least 8 characters long.")
+        return False
+    return True
+
+# --- SAVE ENTRIES TO FILE ---
+def save_to_file(website, email, password):
+    """
+    Saves website, email and password to a JSON file.
+    """
+    with open(FILENAME, "r+") as json_file:
+        try:
+            data = json.load(json_file)
+        except FileNotFoundError:
+            data = {}
+        if website in data:
+            if messagebox.askyesno(title="Overwrite", message="Website already exists. Overwrite?"):
+                data[website] = {"email": email, "password": password}
+            else:
+                return
+        else:
+            data[website] = {"email": email, "password": password}
+        json_file.seek(0)
+        json.dump(data, json_file, indent=4)
+
+# --- UI SETTINGS ---
+window = Tk()
+window.title("Password Manager")
+window.config(padx=50, pady=50)
+
+# ... rest of the UI code ...
+
+# Button commands
+generate_password_button.config(command=lambda: password_entry.insert(0, generate_password()))
+add_button.config(command=lambda: save_to_file(website_entry.get(), email_name_entry.get(), password_entry.get()))
+
+window.mainloop()
