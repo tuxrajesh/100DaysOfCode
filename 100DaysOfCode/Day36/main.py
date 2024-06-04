@@ -1,9 +1,11 @@
 import requests
 import os
+from datetime import date, timedelta
 
-STOCK = "TSLA"
-COMPANY_NAME = "Tesla Inc"
+STOCK = "NVDA"
+COMPANY_NAME = "NVIDIA Inc"
 API_URL = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=IBM&apikey=demo"
+CLOSE_STRING = "4. close"
 
 parameters = {
         "function": "TIME_SERIES_DAILY",
@@ -16,7 +18,21 @@ parameters = {
 response = requests.get(url=API_URL, params=parameters)
 response.raise_for_status()
 data = response.json()
-print(data['Time Series (Daily)'])
+stock_series = data["Time Series (Daily)"]
+
+yesterday = date.today() - timedelta(days=3)
+day_before_yesterday = yesterday - timedelta(days=1)
+ys_string = f'{yesterday:%Y-%m-%d}'
+dbfys_string = f'{day_before_yesterday:%Y-%m-%d}'
+
+ys_close_price = float(stock_series[ys_string][CLOSE_STRING])
+dbfys_close_price = float(stock_series[dbfys_string][CLOSE_STRING])
+print(f"Yesterday: {ys_string}\t Close Price: {ys_close_price}\nDay before yesterday: {dbfys_string}\t Close Price: {dbfys_close_price}")
+
+five_percent = ys_close_price * 0.05
+
+if (abs(ys_close_price - dbfys_close_price) > five_percent):
+    print("Get News!")
 
 ## STEP 2: Use https://newsapi.org
 # Instead of printing ("Get News"), actually get the first 3 news pieces for the COMPANY_NAME. 
